@@ -1,11 +1,11 @@
-import consul
+#import consul
 import subprocess
 from configs import DEFAULT_KV_ENDPOINT
 from base64 import b64decode
 import json
 
 # Create a consul client object
-c = consul.Consul()
+#c = consul.Consul()
 
 def PutKv():
     key = input("Enter Key: ")
@@ -21,8 +21,12 @@ def PutKv():
 def GetKv(recurse=False):
     key = input("Enter Key: ")
     try:
-        returnval = subprocess.Popen("curl -k " + DEFAULT_KV_ENDPOINT + key , shell=True, stdout=subprocess.PIPE) #+ "/\?recurse=true" if recurse else ""
+        url = "curl -k " + DEFAULT_KV_ENDPOINT + key
+        url = url + "?recurse=true" if recurse else url
+        returnval = subprocess.Popen(url , shell=True, stdout=subprocess.PIPE) #+ "/\?recurse=true" if recurse else ""
         val = returnval.stdout.read()
+        if "?keys" == key:
+            return val
         ret_val = json.loads(val.decode("utf-8"))
         print ({x['Key']:b64decode(x['Value']).decode('utf-8') for x in ret_val})
     except:
@@ -33,10 +37,14 @@ def DeleteKv(recurse=False):
     key = input("Enter Key: ")
 
     try:
-        returnval = subprocess.Popen("curl -k --request DELETE " + DEFAULT_KV_ENDPOINT + key , shell=True, stdout=subprocess.PIPE).stdout
+        url = "curl -k --request DELETE " + DEFAULT_KV_ENDPOINT + key
+        url = url + "?recurse=true" if recurse else url
+        returnval = subprocess.Popen(url, shell=True, stdout=subprocess.PIPE).stdout
+        print(returnval)
     except:
         print("invalid key!")
         raise
+
     print(key, "deleted!")
     #print(returnval)
 
